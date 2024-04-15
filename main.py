@@ -22,9 +22,24 @@
 # - JSON formaatissa
 # - Raportti
 
+
+
 from lib.anturi import Sensor
 from lib.halli import Factory
 from lib.zone_control import *
 
-sensor1.set_temp(22.22)
+from fastapi import FastAPI
+
+import sys
+
+app = FastAPI()
+
+
+
+@app.get("/zones")
+def get_shoes():
+    return [halli.zones]
+
+
+
 
