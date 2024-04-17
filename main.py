@@ -36,10 +36,18 @@ app = FastAPI()
 
 
 
+
 @app.get("/zones")
-def get_shoes():
-    return [halli.zones]
+def get_zones():
+    return halli.zones
 
 
+
+@app.get("/sensor")
+def get_sensor(sensor_id : str):
+    for zone in halli.zones:
+        for sensors in zone.values():
+            for sensor in sensors:
+                return sensor
 
 

@@ -1,9 +1,12 @@
 from lib.anturi import Sensor
 from lib.halli import Factory
+from datetime import datetime
 
-sensor1 = Sensor("SF-1")
-sensor2 = Sensor("SF-2")
-sensor3 = Sensor("SF-3")
+current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+sensor1 = Sensor("SF-1", current_time)
+sensor2 = Sensor("SF-2", current_time)
+sensor3 = Sensor("SF-3", current_time)
 
 sensor1.error_state_handle(True)
 
