@@ -3,12 +3,11 @@ class Sensor:
 
         self.id = id
 
-        self.temp : float = 0
         self.error_state : bool = False
-        self.time_stamp : str = current_time
+        self.temperature_readings = []
     
     def error_state_handle(self, error : bool):
         self.error_state = error;
 
-    def set_temp(self, value: float):
-        self.temp = round(value, 1)
+    def set_temp(self, value: float, time : str):
+        self.temperature_readings.insert(0, f"{time}: {round(value, 1)}")

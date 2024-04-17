@@ -1,22 +1,19 @@
 class Factory:
-    def __init__(self, zones : list):
+    def __init__(self, zones : dict):
         self.zones = zones;
-
-    #Lohkon lisäys, lohko on dict, jossa key on lohkon nimi ja valuena lista lohkoon kuuluvista antureista
+        
     def add_zone(self, newZone : dict):
-        self.zones.append(newZone)
+        if newZone not in self.zones:
+            self.zones[newZone] = {}
+
     
 
-    #Anturin lisäys lohkoon
-    def add_sensor_to_zone(self, sensor: object, zone: str):
-        # Tarkistetaan ettei anturi ole jo jossain lohkossa
-        for zone_dict in self.zones:
-            if sensor in [sensor for sublist in zone_dict.values() for sensor in sublist]:
-                print("Sensor already in a zone")
-                return;    
-        for zone_key in self.zones:
-            if zone in zone_key:
-                zone_key[zone].append(sensor)
-                return
+    def add_sensor(self, zone, sensor : object):
+
+        # Tarkistetaan onko anturi jo jossain lohkossa
+        for sensors in self.zones.items():
+            if sensor in sensors:
+                return f"Sensor {sensor.id} already exists!"
+                
+        self.zones[zone][sensor.id] = sensor 
         
-        print("Zone not found")
