@@ -1,6 +1,7 @@
+
 from lib.anturi import *
 from lib.halli import *
-from lib.zone_control import *
+from lib.alustus import *
 from datetime import datetime
 
 from fastapi import HTTPException, status, APIRouter
@@ -36,11 +37,13 @@ def add_one_sensor(sensor_id, zone : str):
 
     sensor_new = Sensor(sensor_id, current_time)
     add_result = halli.add_sensor(zone, sensor_new)
-    if  add_result == 0:
+
+    #add_sensor methodi palauttaa numeron riippuen siitä mitä tapahtuu
+    if  add_result == 0: # Lisäys onnistui
         return f"Anturi: [{sensor_id}] lisätty lohkoon [{zone}]."
-    elif add_result == 1:
+    elif add_result == 1: # Lohkoa ei löytynyt
         raise HTTPException(status_code=404, detail=f"Lohkoa [{zone}] ei löytynyt!")
-    elif add_result == 2:
+    elif add_result == 2: # Anturia ei löytynyt
         raise HTTPException(status_code=409, detail=f"Anturi [{sensor_id}] on jo olemassa!")
             
 
@@ -58,13 +61,14 @@ def move_sensor_route(sensor_id : str, old_zone : str, new_zone : str):
 
     move_result = halli.move_sensor(sensor_id, old_zone, new_zone)
 
-    if move_result == 0:
+    #move_sensor methodi palauttaa numeron riippuen siitä mitä tapahtuu
+    if move_result == 0: # Siirto onnistui
         return {"message": f"Anturi [{sensor_id}] siirretty lohkosta [{old_zone}] lohkoon [{new_zone}]."}
-    elif move_result == 1:
+    elif move_result == 1: # Vanhaa lohkoa ei löytynyt
         raise HTTPException(status_code=404, detail=f"Vanhaa lohkoa [{old_zone}] ei löytynyt!")
-    elif move_result == 2:
+    elif move_result == 2: # Uutta lohkoa ei läytynyt
         raise HTTPException(status_code=404, detail=f"Uutta lohkoa [{new_zone}] ei löytynyt!")
-    elif move_result == 3:
+    elif move_result == 3: # Anturia ei löytynyt
         raise HTTPException(status_code=404, detail=f"Anturia [{sensor_id}] ei löytynyt lohkosta [{old_zone}]!")
 
 
@@ -83,9 +87,36 @@ def change_sensor_status(sensor_id : str, error_status: bool):
         sensor_found = False
         for _, sensors in halli.zones.items():
             if sensor_id in sensors:
-                sensors[sensor_id].error_state_handle(error_status)
+                #Aika pitää päivittää nykyiseen aikaan
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                sensors[sensor_id].error_state_handle(error_status, current_time)
                 sensor_found = True
                 break
         if not sensor_found:
                 raise HTTPException(status_code=404, detail=f"Anturia: [{sensor_id}] ei löytynyt!")
         return {"message": f"Anturi [{sensor_id}]:n virhetila on nyt [{error_status}]"}
+
+@router_posts.post("/sensor/{sensor_id}/temperature", summary="Lähettää haluttuun anturiin uuden lämpötilamittauksen")
+def send_temp_reading(sensor_id : str, temp : float):
+            """
+            Tällä metodilla pystytään simuloimaan lämpötilan mittausta. Jokainen methodin suoritus "ottaa" halutulla anturilla uuden mittatuloksen.\n
+            \n
+            Parameters:
+            - **sensor_id (str)** => Tunniste anturille jolla halutaan simuloida mittaus. esim: SF-1
+            - **temp (float)** => Haluttu lämpötila arvo. esim: 25.45 
+            """
+
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            sensor_found = False
+
+            for _, sensors in halli.zones.items():
+                if sensor_id in sensors:
+                    if sensors[sensor_id].error_state: #Estetään lämpötilan päivitys jos anuri on virhetilassa
+                        raise HTTPException(status_code=406, detail=f"Anturi [{sensor_id}] on virhetilassa!")
+                    sensor_found = True
+                    break
+            if not sensor_found:
+                raise HTTPException(status_code=404, detail=f"Anturia: [{sensor_id}] ei löytynyt!")
+            return {"message": f"Anturin [{sensor_id}] lämpötila on [{temp}], aikaleimalla [{current_time}]"}
+

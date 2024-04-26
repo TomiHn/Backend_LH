@@ -10,19 +10,23 @@ class Sensor:
         self.temperature_readings = []
 
         self.time = current_time
-    def error_state_handle(self, error : bool):
-        self.error_state = error;
+
+        self.state_history = {}
+    def error_state_handle(self, error : bool, current_time: str):
+        self.time = current_time
+        self.error_state = error
+        self.state_history.update({self.time: error})
 
     def set_temp(self, value: float, time : str):
         self.time = time
-        self.temperature_readings.insert(0, f"{self.time}: {round(value, 1)}")
+        self.temperature_readings.insert(0, f"{self.time}: {round(value, 1)} °C")
 
 
 #Mallit
 #Paljon malleja koska dataa pitää vääntää eri muotoihin
 #Yleismalli
 class SensorModel(BaseModel):
-    id : str
+    id : str = Field(..., description="Anturin yksilöllinen tunniste", example="SF-1")
     error_state: bool
     temperature_readings: List[str] = Field(...)
 
@@ -32,7 +36,7 @@ class SensorModel(BaseModel):
     
 #Malli kaikkien palautus metodiin
 class SensorAllModel(BaseModel):
-        id : str
+        id : str = Field(..., description="Anturin yksilöllinen tunniste", example="SF-1")
         error_state: bool
 
 #Malli yhden palautukseen
