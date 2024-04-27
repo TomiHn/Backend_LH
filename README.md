@@ -15,6 +15,7 @@ Project was built and tested with Python 3.12.3.
 # Instructions
 
 The service should start running at : http://127.0.0.1:8000/
+
 To start the API, run:
 
 > uvicorn main:app
